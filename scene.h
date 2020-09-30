@@ -13,14 +13,14 @@ public:
 
 	GUI *gui;
 	FrameBuffer *fb;
-	FrameBuffer* fb1;
-	PPC* ppc;
+	FrameBuffer* fb1, *fb3;
+	PPC* ppc, *ppc3;
 	PPC* ppc1;
 	TMesh* tmeshes;
 	int tmeshesN;
 	texture *texes;
 	int texesN;
-
+	float vf;
 	Scene();
 	void DBG();
 	void NewButton();
