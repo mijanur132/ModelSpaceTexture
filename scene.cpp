@@ -1,308 +1,120 @@
 #include "stdafx.h"
-
+#include<sstream>
+#include<iostream>
 #include "scene.h"
 
 #include "V3.h"
 #include "M33.h"
+#include   <chrono>
 #include "ppc.h"
 #include "TMesh.h"
+#include <stdlib.h>
 
-Scene *scene;
+#include"texture.h"
+
+
+
+
+
+Scene* scene;
 
 using namespace std;
 
-#include <iostream>
 
-Scene::Scene() {
+//hw2 submit
 
-
+Scene::Scene()
+{
+	   	 
 	gui = new GUI();
 	gui->show();
 
 	int u0 = 20;
-	int v0 = 100;
-	int h = 300;
-	int w = 500;
+	int v0 = 20;
+	int h = 1000;
+	int w = 1600;
+	unsigned int col1 = 0xFFFF0000;
 
-	fb = new FrameBuffer(u0, v0, w, h, 0);
-	fb->label("SW 1");
+	fb = new FrameBuffer(u0, v0, w/2, h/2, -40);
+	fb->label("SW frame buffer1");
 	fb->show();
 	fb->redraw();
 
-	fb3 = new FrameBuffer(u0+w+30, v0, w, h, 0);
-	fb3->label("SW 3");
-//	fb3->show();
-	fb3->redraw();
+	fb1 = new FrameBuffer(w/2, v0, w/2 , h/2 , -40);
+	fb1->label("SW frame buffer2");
+	fb1->show();
+	fb1->redraw();
 
+	gui->uiw->position(u0, v0 +550 );
+	
 
-	gui->uiw->position(u0, v0 + h + 50);
-
-	float hfov = 55.0f;
+	float hfov = 90.0f;
 	ppc = new PPC(hfov, fb->w, fb->h);
-	ppc3 = new PPC(hfov, fb3->w, fb3->h);
+	ppc1 = new PPC(hfov, fb1->w, fb1->h);
+	
+	
+	Render(fb, ppc);
+	
+	fb->redraw();	   
+	Fl::check();
+}
 
-	tmeshesN = 2;
+void Scene:: Render(FrameBuffer* fb, PPC* ppc)
+{
+	fb->SetBGR(0xFFFFFFFF);
+	fb->ClearZB();
+
+	//ppc->Pan(10.0f);
+	
+	tmeshesN = 1;
 	tmeshes = new TMesh[tmeshesN];
 
-	V3 cc(0.0f, 0.0f, -100.0f);
+	V3 cc(0.0f, 0.0f, -150.0f);
 	float sideLength = 60.0f;
+	
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
-	tmeshes[0].onFlag = 0;
-
-	tmeshes[1].LoadBin("geometry/teapot1K.bin");
-//	tmeshes[1].LoadBin("geometry/teapot57K.bin");
+	//tmeshes[0].Rotate(cc, V3(1, 0, 0), 90.0f);
 	tmeshes[1].SetCenter(V3(0.0f, 0.0f, -140.0f));
+	texture t1;
+	texesN = 1;
+	texes = new texture[1];
+	t1.LoadTiff("checker.tiff");
+	//tmeshes[0].LoadBin("geometry/teapot1K.bin");
+	tmeshes[0].DrawFilledFrameTexture(fb, ppc,&t1);
 
-	vf = 20.0f;
-
-
-	Render();
-
-}
-
-void Scene::Render() {
-
-	Render(fb, ppc);
-	return;
-
-	Render(fb3, ppc3);
-
-	//ppc->Visualize(fb3, ppc3, vf);
-	//ppc->Visualize(fb3, ppc3, vf, fb);
-	fb3->redraw();
-
+	fb->redraw();
+	Fl::check();	
 }
 
 
-void Scene::Render(FrameBuffer *rfb, PPC *rppc) {
-
-	rfb->SetBGR(0xFFFFFFFF);
-	rfb->ClearZB();
-
-	for (int tmi = 0; tmi < tmeshesN; tmi++) {
-		if (!tmeshes[tmi].onFlag)
-			continue;
-//		tmeshes[tmi].DrawWireFrame(rfb, rppc, 0xFF000000);
-		tmeshes[tmi].RenderFilled(rfb, rppc);
-	}
-
-	rfb->redraw();
-
-}
 
 void Scene::DBG() {
+	V3 tcenter (0.0f, 0.0f, -200.0f);;
+	float rotate = 0.0f;
 
+	for (int i = 0; i < 360; i++)
 	{
+		fb1->SetBGR(0xFFFFFFFF);
+		fb1->ClearZB();
+		rotate = rotate + 5.0f;
+		//tmeshes[0].SetToCube(tcenter, 60, 0xFF0000FF, 0xFF000000);
+		tmeshes[0].Rotate(tcenter, V3(0, 1, 0), rotate);
+		//tmeshes[0].DrawFilledFrameTexture(fb1, ppc1, &texes[0]);
+		
+		/*
+		V3 uvw;
+		ppc1->Project(V3(0.0f, 0.0f, 0.0f), uvw);
 
-		V3 tcenter = tmeshes[1].GetCenter();
-		V3 newC = V3(20.0f, 50.0f, -30.0f);
-		ppc->SetPose(newC, tcenter, V3(0.0f, 1.0f, 0.0f));
-		ppc3->SetPose(V3(0.0f, 50.0f, 100.0f), tcenter, V3(0.0f, 1.0f, 0.0f));
-		for (int i = 0; i < 200; i++) {
-			Render();
-			vf += 1.0f;
-			Fl::check();
-			return;
-		}
-		return;
-
-		V3 aDir(0.0f, 1.0f, 0.0f);
-		for (int i = 0; i < 100; i++) {
-			Render();
-			Fl::check();
-//			tmeshes[1].Rotate(tcenter, aDir, 1.0f);
-			ppc->PanLeftRight(1.0f);
-		}
-		return;
-
+		float uv[2];
+		uv[0] = uvw[0];
+		uv[1] = uvw[1];
+		fb1->DrawCircle(uv, 20, 0xFFFF0000, 0xFF0000FF);
+		*/
+		fb1->redraw();
+		Fl::check();
+		Sleep(100);
 	}
-
-	{
-		fb->SaveAsTiff("mydbg/zb.tif");
-		return;
-	}
-
-	{
-
-		tmeshes[0].onFlag = 0;
-		int fN = 300;
-		float tstep = .1f;
-		for (int fi = 0; fi < fN; fi++) {
-			Render();
-			Fl::check();
-			ppc->TranslateRightLeft(-tstep);
-		}
-		return;
-	}
-
-
-	{
-		int w = fb->w;
-		int h = fb->h;
-		float hfov = 90.0f;
-		PPC ppc(hfov, w, h);
-		V3 cc(0.0f, 0.0f, -100.0f);
-		unsigned int color = 0xFF000000;
-		float sideLength = 60.0f;
-		TMesh tm;
-		tm.SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
-		int fN = 300;
-		float tstep = .1f;
-		for (int fi = 0; fi < fN; fi++) {
-			fb->SetBGR(0xFFFFFFFF);
-//			tm.DrawCubeQuadFaces(fb, &ppc, color);
-			tm.DrawWireFrame(fb, &ppc, color);
-			fb->redraw();
-			Fl::check();
-			ppc.TranslateRightLeft(-tstep);
-//			ppc.TranslateFrontBack(tstep);
-		}
-		return;
-	}
-
-
-
-	{
-		int w = fb->w;
-		int h = fb->h;
-		float hfov = 90.0f;
-		PPC ppc(hfov, w, h);
-		V3 P(0.0f, 0.0f, -100.0f);
-
-		V3 uP, p;
-		ppc.Project(P, p);
-		uP = ppc.UnProject(p);
-		cerr << uP;
-
-		fb->SetBGR(0xFFF0000);
-		V3 tr((float)w, 0.0f, 1.0f);
-		V3 trP = ppc.UnProject(tr);
-		V3 ptr;
-		ppc.Project(trP, ptr);
-		fb->DrawSquarePoint(ptr[0], ptr[1], 13, 0xFF00FF00);
-		fb->redraw();
-		return;
-
-		return;
-
-		V3 Q(0.0f, -10.0f, -50.0f);
-		V3 q;
-
-		fb->SetBGR(0xFFFFFFFF);
-		for (int i = 0; i < 10; i++) {
-			if (!ppc.Project(P, p))
-				continue;
-			fb->DrawSquarePoint(p[0], p[1], 5, 0xFF000000);
-
-			if (!ppc.Project(Q, q))
-				continue;
-			fb->DrawSquarePoint(q[0], q[1], 5, 0xFF0000FF);
-
-			fb->redraw();
-			Fl::check();
-			P = P + V3(10.0f, 0.0f, 0.0f);
-			Q = Q + V3(10.0f, 0.0f, 0.0f);
-		}
-
-
-		if (ppc.Project(P, p)) {
-			cerr << p << endl;
-		}
-		else {
-			cerr << "INFO: point is behind the head" << endl;
-		}
-
-		return;
-
-	}
-
-	{
-
-		M33 m;
-		V3 r0(1.0f, 1.0f, 1.0f);
-		V3 r1(-2.0f, 2.0f, 2.0f);
-		V3 r2(3.0f, -3.0f, 3.0f);
-		m[0] = r0;
-		m[1] = r1;
-		m[2] = r2;
-		V3 v(1.0f, 2.0f, 3.0f);
-		V3 ret = m*v;
-		cerr << ret;
-		M33 m1 = m.Inverted();
-		cerr << m*m1.GetColumn(0) << m*m1.GetColumn(1) << m*m1.GetColumn(2);
-		return;
-	}
-
-
-	{
-		M33 m;
-		V3 v0(1.0f, 3.0f, -1.0f);
-		m[0] = v0;
-		cerr << m[0] << endl;
-		cerr << m[0][2] << endl;
-		m[0][2] = 1000.0f;
-		cerr << m[0][2] << endl;
-		return;
-	}
-
-	{
-
-		V3 v0(2.0f, 2.0f, 2.0f);
-		V3 v1(4.0f, 3.0f, 5.0f);
-		cerr << v0 + v1;
-		cerr << "v0*v1 " << v0*v1 << endl;
-		cerr << v0.Length() << endl;
-		cerr << (v0.Normalized()).Length() << endl;
-		cerr << v0;
-		return;
-
-	}
-
-	{
-		V3 v;
-		v.xyz[0] = 1.0f;
-		v.xyz[1] = -1.0f;
-		v.xyz[2] = 0.0f;
-		cerr << v[0] << endl;
-		v[0] = 100.0f;
-		cerr << v[0] << endl;
-		return;
-
-	}
-
-	fb->LoadTiff("mydbg/im.tif");
-	fb->redraw();
-	return;
-	cerr << "INFO: pressed DBG Button" << endl;
-
-	{
-		float uv0[2] = { 10.1f, 20.2f };
-		float uv1[2] = { 510.1f, 420.2f };
-		unsigned int col = 0xFF000000;
-		int fN = 300;
-		for (int fi = 0; fi < fN; fi++) {
-			fb->SetBGR(0xFFFFFFFF);
-//			fb->Draw2DSegment(uv0, uv1, cv, cv);
-			uv0[1] += 1.0f;
-			uv1[1] -= 1.0f;
-			fb->redraw();
-			Fl::check();
-		}
-		fb->SaveAsTiff("mydbg/im.tif");
-	}
-
-	return;
-
-	{
-		fb->SetBGR(0xFF0000FF);
-		fb->SetChecker(0xFF000000, 0xFFFFFFFF, 40);
-		fb->SetBGR(0xFFFFFFFF);
-		float uv0[2] = { 20.3f, 300.45f };
-		float uv1[2] = { 420.73f, 100.45f };
-		unsigned int col = 0xFF000000;
-//		fb->Draw2DSegment(uv0, uv1, col);
-	}
-
+	
 }
 
 

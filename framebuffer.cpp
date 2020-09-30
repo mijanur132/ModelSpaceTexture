@@ -242,8 +242,6 @@ void FrameBuffer::Draw3DPoint(V3 P, PPC* ppc, unsigned int color, int psize) {
 }
 
 
-
-
 void FrameBuffer::draw() {
 
 	glDrawPixels(w, h, GL_RGBA, GL_UNSIGNED_BYTE, pix);
@@ -381,20 +379,3 @@ int FrameBuffer::Farther3d(int u, int v, float currz) {
 	return 0;
 
 }
-
-#if 0
-
-unsigned int FrameBuffer::Get(int u, int v) {
-
-	return pix[(h - 1 - v) * w + u];
-
-}
-
-float FrameBuffer::GetZ(int u, int v) {
-
-	return zb[(h - 1 - v) * w + u];
-
-}
-
-
-#endif

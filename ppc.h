@@ -1,7 +1,6 @@
 #pragma once
 
 #include "v3.h"
-#include"framebuffer.h"
 
 class PPC {
 public:
@@ -24,9 +23,4 @@ public:
 	V3 GetVD();
 	float GetFocalLength();
 	void load4mText(char* name);
-	//void Visualize(FrameBuffer* vfb, PPC* vppc, float vf);
-	//void Visualize(FrameBuffer* vfb, PPC* vppc, float vf, FrameBuffer* fb);
-	//float GetF();
-	//void SetPose(V3 newC, V3 lookAtPoint, V3 upGuidance);
-	//void PanLeftRight(float rstep);
 };
