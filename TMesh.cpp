@@ -547,10 +547,10 @@ void TMesh::DrawFilledFrameTexture(FrameBuffer* fb, PPC* ppc, texture *t1)
 
 		cout << V0<<" "<<V1<<" "<<V2 << endl;
 		cout << "topBLR" << topP << bottomP << leftP << rightP << endl;
-		float delta = 0.5f;
+		float delta = 1.0f;
 		
 	
-		for (int j = topP.xyz[1] - delta; j <= bottomP.xyz[1] + delta; j++)
+		for (int j = topP.xyz[1] + delta; j <= bottomP.xyz[1] - delta; j++)
 		{
 			for (int i = leftP.xyz[0] - delta; i <= rightP.xyz[0] + delta; i++)
 			{
@@ -566,7 +566,7 @@ void TMesh::DrawFilledFrameTexture(FrameBuffer* fb, PPC* ppc, texture *t1)
 				GetBarryCentric(V0, V1, V2, V3(i, j, 0), uvw);
 				
 					
-				if (uvw.xyz[0] >= 0 && uvw.xyz[1] >= 0 && uvw.xyz[2] >= 0 && uvw.xyz[0] < 1 && uvw.xyz[1] <1 && uvw.xyz[2] <1)
+				if (uvw.xyz[0] >= 0 && uvw.xyz[1] >= 0 && uvw.xyz[2] >= 0 && uvw.xyz[0] <= 1 && uvw.xyz[1] <=1 && uvw.xyz[2] <=1)
 				{	
 					if (!fb->Farther(i, j, zfinal))
 					{
@@ -586,7 +586,7 @@ void TMesh::DrawFilledFrameTexture(FrameBuffer* fb, PPC* ppc, texture *t1)
 						//texI = (i - (V0[0])) / (V2[0]-V0[0]) * t1->w;
 						//texJ = (j - (V0[1])) / (V2[1] - V0[1]) * t1->h;
 						int pixIJ = texI + texJ * t1->w;
-						if (pixIJ<0 || pixIJ>t1->w* t1->h)
+						if (pixIJ<0 || pixIJ>(t1->w* t1->h))
 						{
 							cout << "**********************Problem: pixel seeking beyond image corodinate:" << pixIJ << " **************************" << endl;
 						}
