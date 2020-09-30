@@ -6,6 +6,9 @@
 #include "texture.h"
 #include<vector>
 
+#include "M33.h"
+
+
 class TMesh {
 public:
 	int onFlag;
@@ -40,4 +43,8 @@ public:
 	vector<V3> TriangleGetInsidePoints(FrameBuffer* fb, V3 leftP, V3 rightP, V3 topP, V3 bottomP, V3 sideL, V3 V0, V3 V1, V3 V2);
 	void ColorInsidePointsSS(FrameBuffer* fb, vector<V3> insidePoints, V3 pa, V3 pb, V3 pc, V3 V1, V3 V2, V3 V3, texture* t1, PPC* ppc);
 	void ColorInsidePointsMS(FrameBuffer* fb, vector<V3> insidePoints, V3 pa, V3 pb, V3 pc, V3 V1, V3 V2, V3 V3, texture* t1);
+	void RenderFilled(FrameBuffer* fb, PPC* ppc);
+	V3 SetEEQ(V3 v0, V3 v1, V3 v2);
+	M33 SetEEQs(V3 pv0, V3 pv1, V3 pv2);
+	M33 SetSSIM(V3 pv0, V3 pv1, V3 pv2);
 };

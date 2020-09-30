@@ -1,11 +1,11 @@
 #pragma once
 
-#include"V3.h"
-#include"ppc.h"
+
 #include <FL/Fl.H>
 #include <FL/Fl_Gl_Window.H>
 #include <GL/glut.h>
-#
+#include "V3.h"
+#include "ppc.h"
 
 class FrameBuffer : public Fl_Gl_Window {
 public:
@@ -33,7 +33,6 @@ public:
 	void Draw2DSegmentOld(float uv0[2], float uv1[2], unsigned int col);
 	void Draw2DSegment(V3 p0, V3 c0, V3 p1, V3 c1);
 	void DrawRect(float uv0[2], float uv1[2], float uv2[2], float uv3[2], unsigned int borderCol);
-
 	void Draw3DPoint(V3 P, PPC* ppc, unsigned int color, int psize);
 	void Draw3DSegment(V3 P0, V3 P1, PPC* ppc, V3 c0, V3 c1);
 	void DrawSquarePoint(float uf, float vf, int psize, unsigned int color);
@@ -43,5 +42,8 @@ public:
 	void ClearZB3d();
 	
 	float euclideanLength2D(float uv[2], float uv1[2]);
+
+	//unsigned int Get(int u, int v);
+	//float GetZ(int u, int v);
 
 };

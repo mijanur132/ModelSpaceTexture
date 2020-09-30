@@ -229,4 +229,75 @@ void PPC::SetInterpolated(PPC* ppc0, PPC* ppc1, int stepi, int stepsN) {
 	
 
 }
+#if 0
 
+// vf determines how far the image plane is in the visualization
+void PPC::Visualize(FrameBuffer* vfb, PPC* vppc, float vf) {
+
+	unsigned int color = 0xFF000000;
+	V3 c1; c1.SetFromColor(color);
+	vfb->Draw3DPoint(C, vppc, color, 7);
+
+	V3 imageCorners[4];
+	float _w = GetF() / vf;
+	imageCorners[0] = UnProject(V3(0.5f, 0.5f, _w));
+	imageCorners[1] = UnProject(V3(0.5f, -0.5f + (float)h, _w));
+	imageCorners[2] = UnProject(V3(-0.5f + (float)w, -0.5f + (float)h, _w));
+	imageCorners[3] = UnProject(V3(-0.5f + (float)w, 0.5f, _w));
+	V3 c0; c0.SetFromColor(0xFF0000FF);
+	for (int i = 0; i < 4; i++) {
+		vfb->Draw3DSegment(imageCorners[i], imageCorners[(i + 1) % 4], vppc, c0, c0);
+	}
+	vfb->Draw3DSegment(C, imageCorners[0], vppc, c1, c0);
+
+}
+
+void PPC::Visualize(FrameBuffer* vfb, PPC* vppc, float vf, FrameBuffer* fb) {
+
+	float f = GetF();
+	for (int v = 0; v < fb->h; v++) {
+		for (int u = 0; u < fb->w; u++) {
+			if (fb->GetZ(u, v) == 0.0f)
+				continue;
+			float _w = f / vf;
+			V3 pix3D = UnProject(V3(.5f + (float)u, .5f + (float)v, _w));
+			vfb->Draw3DPoint(pix3D, vppc, fb->Get(u, v), 1);
+		}
+	}
+
+}
+
+
+
+float PPC::GetF() {
+
+	return c * (a ^ b).Normalized();
+
+}
+
+void PPC::SetPose(V3 newC, V3 lookAtPoint, V3 upGuidance) {
+
+	V3 newvd = (lookAtPoint - newC).Normalized();
+	V3 newa = (newvd ^ upGuidance).Normalized();
+	V3 newb = (newvd ^ newa).Normalized();
+	float focalLength = (a ^ b).Normalized() * c;
+	V3 newc = newvd * focalLength - newa * (float)w / 2.0f - newb * (float)h / 2.0f;
+
+
+	// commit changes to camera
+	a = newa;
+	b = newb;
+	c = newc;
+	C = newC;
+
+}
+
+void PPC::PanLeftRight(float rstep) {
+
+	V3 adir = b.Normalized() * -1.0f;
+	a = a.RotateVector(adir, rstep);
+	c = c.RotateVector(adir, rstep);
+
+}
+
+#endif
