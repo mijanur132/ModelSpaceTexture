@@ -379,6 +379,22 @@ M33 TMesh::SetSSIM(V3 pv0, V3 pv1, V3 pv2) {
 	return ret.Inverted();
 
 }
+#if 0
+model space works with unprojected original vertices of the model
+#endif
+
+M33 TMesh::SetMSIM(V3 V1, V3 V2, V3 V3, PPC* ppc) {
+
+	M33 ret;
+	ret[0] = V1-  ppc->C;
+	ret[1] = V2 - ppc->C;
+	ret[2] = V3 - ppc->C;
+	ret = ret.Transposed();
+	return ret.Inverted();
+
+
+
+}
 
 void TMesh::MapTextureCorners2TriangleVerts(int tri, int whichHalf) {
 	//whichHalf 0-->left/up side  1 for right/down side triangle
@@ -409,7 +425,8 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 
 	trisN = 2; //temp just to check one face of the cube for hw3 other wise delte this line.
 
-	for (int tri = 0; tri < trisN; tri++) {
+	for (int tri = 0; tri < trisN; tri++) 
+	{
 		unsigned int vinds[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2] };
 		if (
 			pverts[vinds[0]][0] == FLT_MAX ||
@@ -433,6 +450,8 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 		M33 eeqsm = SetEEQs(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
 		M33 ssim = SetSSIM(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
 
+	//	M33 msim = SetMSIM(verts[vinds[0]], verts[vinds[1]], verts[vinds[2]], ppc);
+
 		V3 zv(pverts[vinds[0]][2], pverts[vinds[1]][2], pverts[vinds[2]][2]);
 		V3 zLE = ssim * zv;
 
@@ -453,12 +472,43 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 				V3 sid = eeqsm * currPix;
 				if (sid[0] < 0.0f || sid[1] < 0.0f || sid[2] < 0.0f)
 					continue; // outside of triangle
+				float currz = zLE * currPix;
+
+#if 1
+				currPix[2] = currz;
+				V3 UcurrPix = ppc->UnProject(currPix);
+				V3 uvw(0, 0, 0);
+				GetBarryCentric(verts[vinds[0]], verts[vinds[1]], verts[vinds[2]], UcurrPix, uvw);								
+				int currS = (uvw.xyz[2] * textureSTpair[vinds[0]][0]+ uvw.xyz[0] * textureSTpair[vinds[1]][0]+ uvw.xyz[1] * textureSTpair[vinds[2]][0])*t1->w;
+				int currT = (uvw.xyz[2] * textureSTpair[vinds[0]][1] + uvw.xyz[0] * textureSTpair[vinds[1]][1] + uvw.xyz[1] * textureSTpair[vinds[2]][1])*t1->h;
+				int pixIJ = currS + (currT)* t1->w;
+
 				
+				
+#endif
+
+#if 0
+				cout << "unprojected curr pix and barrycentric uvw:" << endl;
+				cout << UcurrPix << endl;				
+				cout << uvw<< endl;
+				cout << verts[vinds[0]] << endl;
+				cout << verts[vinds[1]] << endl;
+				cout << verts[vinds[2]] << endl;
+				cout <<"texS"<< textureSTpair[vinds[0]][0] << " " << textureSTpair[vinds[1]][0] << " " << textureSTpair[vinds[2]][0] << endl;
+				cout << "texT" << textureSTpair[vinds[0]][1] << " " << textureSTpair[vinds[1]][1] << " " << textureSTpair[vinds[2]][1] << endl;
+				cout << "j, i, T, s:" << v << "," << u << "," << currT << "," << currS << endl;
+				cout << pixIJ << endl;
+#endif
+
+#if 0
 				int currS = sLE * currPix*t1->w;
 				int currT = tLE * currPix*t1->h;
 				//cout << "j, i, T, s:" << v << "," << u << "," << currT << "," << currS << endl;
 				int pixIJ = currS + currT * t1->w;
 				//cout << pixIJ << endl;
+#endif
+
+#if 1
 				if (pixIJ >= t1->w* t1->w)
 				{
 					pixIJ = t1->w * t1->w-1;
@@ -470,9 +520,14 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 					cout << "****************Warning: pixel beyond texture******************" << endl;
 				}
 				unsigned int color_uvw = t1->pix[pixIJ];
-				//V3 color = V3(0, currT, 0);
-				//unsigned int color_uvw = color.GetColor();
-				float currz = zLE * currPix;
+#endif
+#if 0
+				//use this two lines to check weather interpolation works or not based on the colors of the vertices
+				V3 color = V3(uvw[2],0, 0);
+				unsigned int color_uvw = color.GetColor();
+
+#endif
+				//float currz = zLE * currPix;
 				if (fb->Farther(u, v, currz))
 					continue; // hidden
 				
@@ -483,4 +538,45 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 	}
 
 	delete[]pverts;
+}
+
+float TMesh::CalcArea(V3 p1, V3 p2, V3 p3)
+{
+	float area = ((p1.xyz[0] * (p2.xyz[1] - p3.xyz[1]) + p2.xyz[0] * (p3.xyz[1] - p1.xyz[1]) + p3.xyz[0] * (p1.xyz[1] - p2.xyz[1])) / 2.0f);
+	return area;
+}
+
+/*
+c
+ \
+|		w	\
+	\			\
+  u	 D *		-	-	b
+|				/
+	/	v	/
+|		/
+a
+ some point P=ua+vb+wc
+*/
+
+/*
+Gives barrycentric co-ordinates of a point p with respect to a triangle with point a,b and c
+Refer to the graph above for understanding u,v and w
+calculates area of the whole triangle and sub triangles formed by the point and two triangle points and find ratios
+returns
+barycentric parameters u,b,w
+0<u,v,w<1 for the point within the triangle. 0 means on the line.
+*/
+
+void TMesh::GetBarryCentric(V3 a, V3 b, V3 c, V3 p, V3& uvw)
+{
+	float area_abc = CalcArea(a, b, c) + 0.01f;
+	float area_cap = CalcArea(c, a, p);
+	float area_abp = CalcArea(a, b, p);
+	float area_bcp = CalcArea(b, c, p);
+
+	uvw.xyz[0] = area_cap / area_abc;
+	uvw.xyz[1] = area_abp / area_abc;
+	uvw.xyz[2] = area_bcp / area_abc;
+
 }

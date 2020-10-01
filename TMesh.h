@@ -31,8 +31,11 @@ public:
 	V3 SetEEQ(V3 v0, V3 v1, V3 v2);
 	M33 SetEEQs(V3 pv0, V3 pv1, V3 pv2);
 	M33 SetSSIM(V3 pv0, V3 pv1, V3 pv2);
+	M33 SetMSIM(V3 V1, V3 V2, V3 V3, PPC* ppc);
 	void InitTexture();
 	void MapTextureCorners2TriangleVerts(int triangleID, int whichHalf);
 	void info();
 	void RenderTexture(FrameBuffer* rfb, PPC* rppc, texture* t1);
+	void GetBarryCentric(V3 p1, V3 p2, V3 p3, V3 p, V3& uvw);
+	float CalcArea(V3 p1, V3 p2, V3 p3);
 };

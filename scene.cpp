@@ -64,8 +64,8 @@ Scene::Scene() {
 	//tmeshes[0].DrawWireFrame(fb, ppc, 0xFFFF00FF);
 
 	t1=new texture();
-	//t1->LoadTiff("checker.tiff");
-	t1->LoadTiff("orange.tiff");
+	t1->LoadTiff("checker.tiff");
+	//t1->LoadTiff("orange.tiff");
 	//tmeshes[0].RenderTexture(fb, ppc, t1);
 	//fb->redraw();
 	
@@ -112,7 +112,7 @@ void Scene::DBG() {
 
 			fb->SetBGR(0xFFFFFFFF);
 			fb->ClearZB();
-			tmeshes[0].Rotate(tmeshes[0].GetCenter(), V3(1, 0, 0), 1.0f);
+			tmeshes[0].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
 			tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
 			tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
 			tmeshes[0].RenderTexture(fb, ppc, t1);
