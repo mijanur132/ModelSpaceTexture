@@ -5,6 +5,8 @@
 #include <GL/glut.h>
 
 #include "ppc.h"
+#include"texture.h"
+
 class PPC;
 
 class FrameBuffer : public Fl_Gl_Window {
@@ -29,4 +31,5 @@ public:
 	int Farther(int u, int v, float currz);
 	void ClearZB();
 	void Draw3DPoint(V3 P, PPC *ppc, unsigned int color, int psize);
+	void showTextureImageAsUploaded(texture* t1);
 };

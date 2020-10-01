@@ -15,9 +15,32 @@ void TMesh::Allocate(int _vertsN, int _trisN) {
 	vertsN = _vertsN;
 	trisN = _trisN;
 	verts = new V3[vertsN];
+	textureSTpair = new V3[vertsN];
 	colors = new V3[vertsN];
 	normals = new V3[vertsN];
 	tris = new unsigned int[trisN * 3];
+}
+
+void TMesh::InitTexture()
+{
+	for (int i = 0; i < vertsN; i++)
+	{
+		textureSTpair[i] = V3(FLT_MAX, FLT_MAX, FLT_MAX);
+	}
+
+
+}
+
+void TMesh::info() {
+
+	for (int i = 0; i < trisN; i++)
+	{
+		cout << "vertices of triangle: " << i << " are: " << endl;
+		cout<<"vertice ID: "<<tris[3 * i] << ", vertice:" << verts[tris[3 * i]] << ", textureRSpair:" << textureSTpair[tris[3 * i]] << endl;
+		cout << "vertice ID: " << tris[3 * i+1] << ", vertice:" << verts[tris[3 * i+1]] << ", textureRSpair:" << textureSTpair[tris[3 * i+1]] << endl;
+		cout << "vertice ID: " << tris[3 * i+2] << ", vertice:" << verts[tris[3 * i+2]] << ", textureRSpair:" << textureSTpair[tris[3 * i+2]] << endl;
+	}
+
 }
 
 void TMesh::SetToCube(V3 cc, float sideLength, unsigned int color0, unsigned int color1) {
@@ -25,6 +48,8 @@ void TMesh::SetToCube(V3 cc, float sideLength, unsigned int color0, unsigned int
 	vertsN = 8;
 	trisN = 6 * 2;
 	Allocate(vertsN, trisN);
+
+
 
 	for (int vi = 0; vi < 4; vi++) {
 		colors[vi].SetFromColor(color0);
@@ -115,7 +140,7 @@ void TMesh::DrawCubeQuadFaces(FrameBuffer *fb, PPC *ppc, unsigned int color) {
 }
 
 void TMesh::DrawWireFrame(FrameBuffer *fb, PPC *ppc, unsigned int color) {
-
+	//trisN = 2; //temp just to check one face of the cube for hw3 other wise delte this line.
 	for (int tri = 0; tri < trisN; tri++) {
 		V3 V0 = verts[tris[3 * tri + 0]];
 		V3 V1 = verts[tris[3 * tri + 1]];
@@ -243,6 +268,8 @@ void TMesh::RenderFilled(FrameBuffer *fb, PPC *ppc) {
 			pverts[vi] = V3(FLT_MAX, FLT_MAX, FLT_MAX);
 	}
 
+	trisN = 2; //temp just to check one face of the cube for hw3 other wise delte this line.
+
 	for (int tri = 0; tri < trisN; tri++) {
 		unsigned int vinds[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2]};
 		if (
@@ -351,4 +378,97 @@ M33 TMesh::SetSSIM(V3 pv0, V3 pv1, V3 pv2) {
 	ret.SetColumn(2, V3(1.0f, 1.0f, 1.0f));
 	return ret.Inverted();
 
+}
+
+void TMesh::MapTextureCorners2TriangleVerts(int tri, int whichHalf) {
+	//whichHalf 0-->left/up side  1 for right/down side triangle
+	//Z VALUE DOES NOT MATTER
+	unsigned int vin[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2] };
+	if (whichHalf == 0)
+	{
+		textureSTpair[vin[0]] = V3(0,0, 1);
+		textureSTpair[vin[1]] = V3(0, 1, 1);
+		textureSTpair[vin[2]] = V3(1, 1, 1);
+	}
+	else {
+	
+		textureSTpair[vin[0]] = V3(1, 1, 1);
+		textureSTpair[vin[1]] = V3(1, 0, 1);
+		textureSTpair[vin[2]] = V3(0, 0, 1);
+	
+	}
+}
+
+void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
+
+	V3* pverts = new V3[vertsN];
+	for (int vi = 0; vi < vertsN; vi++) {
+		if (!ppc->Project(verts[vi], pverts[vi]))
+			pverts[vi] = V3(FLT_MAX, FLT_MAX, FLT_MAX);
+	}
+
+	trisN = 1; //temp just to check one face of the cube for hw3 other wise delte this line.
+
+	for (int tri = 0; tri < trisN; tri++) {
+		unsigned int vinds[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2] };
+		if (
+			pverts[vinds[0]][0] == FLT_MAX ||
+			pverts[vinds[1]][0] == FLT_MAX ||
+			pverts[vinds[2]][0] == FLT_MAX
+			)
+			continue;
+
+		AABB aabb(pverts[vinds[0]]);
+		aabb.AddPoint(pverts[vinds[1]]);
+		aabb.AddPoint(pverts[vinds[2]]);
+		// clipping
+		// if (!aabb.ClipWithFrame(fb->w, fb->h))
+		//	continue;
+
+		int left = (int)(aabb.corners[0][0] + .5f);
+		int right = (int)(aabb.corners[1][0] - .5f);
+		int top = (int)(aabb.corners[0][1] + .5f);
+		int bottom = (int)(aabb.corners[1][1] - .5f);
+
+		M33 eeqsm = SetEEQs(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
+		M33 ssim = SetSSIM(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
+
+		V3 zv(pverts[vinds[0]][2], pverts[vinds[1]][2], pverts[vinds[2]][2]);
+		V3 zLE = ssim * zv;
+
+		cout <<verts[ vinds[0]]<<verts[ vinds[1]]<<verts[vinds[2]] << endl;
+
+		V3 texS(textureSTpair[vinds[0]][0] , textureSTpair[vinds[1]][0] , textureSTpair[vinds[2]][0]);
+		V3 texT(textureSTpair[vinds[0]][1], textureSTpair[vinds[1]][1], textureSTpair[vinds[2]][1]);
+		V3 sLE = ssim * texS;
+		V3 tLE = ssim * texT;
+		cout << "texS and texT:" << endl;
+		cout << texS << texT << endl;
+		cout << "sLE and tLE" << endl;
+		cout << sLE << tLE << endl;
+		cout << top << " " << bottom << " " << left << " " << right << endl;
+		for (int v = top; v <= bottom; v++) {
+			for (int u = left; u <= right; u++) {
+				V3 currPix(.5f + (float)u, .5f + (float)v, 1.0f);
+				V3 sid = eeqsm * currPix;
+				if (sid[0] < 0.0f || sid[1] < 0.0f || sid[2] < 0.0f)
+					continue; // outside of triangle
+				
+				float currS = sLE * currPix*t1->w;
+				float currT = tLE * currPix*t1->h;
+				//cout << "j, i, T, s:" << v << "," << u << "," << currT << "," << currS << endl;
+				int pixIJ = currS + currT * t1->w;
+				unsigned int color_uvw = t1->pix[pixIJ];
+
+				float currz = zLE * currPix;
+				if (fb->Farther(u, v, currz))
+					continue; // hidden
+				
+				fb->Set(u, v, color_uvw);
+			}
+		}
+
+	}
+
+	delete[]pverts;
 }

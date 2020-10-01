@@ -18,14 +18,14 @@ public:
 	PPC* ppc1;
 	TMesh* tmeshes;
 	int tmeshesN;
-	texture *texes;
-	int texesN;
+	texture *t1;
+	//int texesN;
 	float vf;
 	Scene();
 	void DBG();
 	void NewButton();
 	void Render();
-	void Render(FrameBuffer* fb, PPC* ppc);
+	void Render(FrameBuffer* fb, PPC* ppc, texture* t1);
 };
 
 extern Scene *scene;

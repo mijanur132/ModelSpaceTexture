@@ -241,3 +241,18 @@ float FrameBuffer::GetZ(int u, int v) {
 	return zb[(h - 1 - v)*w + u];
 
 }
+
+void FrameBuffer::showTextureImageAsUploaded(texture* t1) {
+
+	for (int i = 0; i < t1->w; i++)
+	{
+		for (int j = 0; j < t1->h; j++)
+		{
+			unsigned int color_ij = i + j * t1->w;
+			Set(i, j, t1->pix[color_ij]);
+
+		}
+
+	}
+
+}

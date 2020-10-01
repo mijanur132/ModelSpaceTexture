@@ -27,12 +27,23 @@ Scene::Scene() {
 	fb = new FrameBuffer(u0, v0, w, h, 0);
 	fb->label("SW 1");
 	fb->show();
-	fb->redraw();
+	//fb->redraw();
+
+
+
+	t1 = new texture();
+	//t1->LoadTiff("checker.tiff");
+	//t1->LoadTiff("orange.tiff");
+	//fb->showTextureImageAsUploaded(t1);
+
+	//fb->redraw();
+#if 1
 
 	fb3 = new FrameBuffer(u0+w+30, v0, w, h, 0);
 	fb3->label("SW 3");
 //	fb3->show();
 	fb3->redraw();
+
 
 
 	gui->uiw->position(u0, v0 + h + 50);
@@ -44,31 +55,35 @@ Scene::Scene() {
 	tmeshesN = 2;
 	tmeshes = new TMesh[tmeshesN];
 
-	V3 cc(0.0f, 0.0f, -100.0f);
+	V3 cc(0.0f, 0.0f, -200.0f);
 	float sideLength = 60.0f;
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
-	tmeshes[0].onFlag = 0;
+	tmeshes[0].onFlag = 1;
+	//tmeshes[0].DrawWireFrame(fb, ppc, 0xFFFF00FF);
 
-	tmeshes[1].LoadBin("geometry/teapot1K.bin");
-//	tmeshes[1].LoadBin("geometry/teapot57K.bin");
-	tmeshes[1].SetCenter(V3(0.0f, 0.0f, -140.0f));
+	t1=new texture();
+	t1->LoadTiff("checker.tiff");
+	tmeshes[0].InitTexture();
+	tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
+	tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
+	tmeshes[0].RenderTexture(fb, ppc, t1);
+	fb->redraw();
 
-	vf = 20.0f;
+	//Render();
 
-
-	Render();
+#endif
 
 }
 
 void Scene::Render() {
 
-	Render(fb, ppc);
+	Render(fb, ppc,t1);
 	return;
 	
 }
 
 
-void Scene::Render(FrameBuffer *rfb, PPC *rppc) {
+void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1) {
 
 	rfb->SetBGR(0xFFFFFFFF);
 	rfb->ClearZB();
@@ -76,8 +91,8 @@ void Scene::Render(FrameBuffer *rfb, PPC *rppc) {
 	for (int tmi = 0; tmi < tmeshesN; tmi++) {
 		if (!tmeshes[tmi].onFlag)
 			continue;
-//		tmeshes[tmi].DrawWireFrame(rfb, rppc, 0xFF000000);
-		tmeshes[tmi].RenderFilled(rfb, rppc);
+		//tmeshes[tmi].DrawWireFrame(rfb, rppc, 0xFF000000);
+		tmeshes[tmi].RenderTexture(rfb, rppc,t1);
 	}
 
 	rfb->redraw();
