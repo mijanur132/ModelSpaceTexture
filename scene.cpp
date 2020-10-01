@@ -31,11 +31,10 @@ Scene::Scene() {
 
 
 
-	t1 = new texture();
+	//t1 = new texture();
 	//t1->LoadTiff("checker.tiff");
 	//t1->LoadTiff("orange.tiff");
 	//fb->showTextureImageAsUploaded(t1);
-
 	//fb->redraw();
 #if 1
 
@@ -44,7 +43,8 @@ Scene::Scene() {
 //	fb3->show();
 	fb3->redraw();
 
-
+	fb->SetBGR(0xFFFFFFFF);
+	fb->ClearZB();
 
 	gui->uiw->position(u0, v0 + h + 50);
 
@@ -52,24 +52,24 @@ Scene::Scene() {
 	ppc = new PPC(hfov, fb->w, fb->h);
 	ppc3 = new PPC(hfov, fb3->w, fb3->h);
 
-	tmeshesN = 2;
+	tmeshesN = 1;
 	tmeshes = new TMesh[tmeshesN];
 
 	V3 cc(0.0f, 0.0f, -200.0f);
 	float sideLength = 60.0f;
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
+	
+	//tmeshes[0].Rotate(tmeshes[0].GetCenter(),V3(0,1,0), 50.0f);
 	tmeshes[0].onFlag = 1;
 	//tmeshes[0].DrawWireFrame(fb, ppc, 0xFFFF00FF);
 
 	t1=new texture();
-	t1->LoadTiff("checker.tiff");
-	tmeshes[0].InitTexture();
-	tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
-	tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
-	tmeshes[0].RenderTexture(fb, ppc, t1);
-	fb->redraw();
-
-	//Render();
+	//t1->LoadTiff("checker.tiff");
+	t1->LoadTiff("orange.tiff");
+	//tmeshes[0].RenderTexture(fb, ppc, t1);
+	//fb->redraw();
+	
+	Render(fb,ppc,t1);
 
 #endif
 
@@ -88,6 +88,11 @@ void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1) {
 	rfb->SetBGR(0xFFFFFFFF);
 	rfb->ClearZB();
 
+	tmeshes[0].InitTexture();
+	tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
+	tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
+
+
 	for (int tmi = 0; tmi < tmeshesN; tmi++) {
 		if (!tmeshes[tmi].onFlag)
 			continue;
@@ -102,6 +107,20 @@ void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1) {
 void Scene::DBG() {
 
 	{
+		for (int i = 0; i < 36000; i++)
+		{
+
+			fb->SetBGR(0xFFFFFFFF);
+			fb->ClearZB();
+			tmeshes[0].Rotate(tmeshes[0].GetCenter(), V3(1, 0, 0), 1.0f);
+			tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
+			tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
+			tmeshes[0].RenderTexture(fb, ppc, t1);
+			fb->redraw();
+			Fl::check();
+			
+		}
+		return;
 
 		V3 tcenter = tmeshes[1].GetCenter();
 		V3 newC = V3(20.0f, 50.0f, -30.0f);

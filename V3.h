@@ -37,7 +37,6 @@ public:
 	void SetFromColor(unsigned int color);
 	unsigned int GetColor();
 	V3 RotateVector(V3 adir, float theta);
-
 	V3 RotatePoint(V3 aO, V3 adir, float theta);
 
 

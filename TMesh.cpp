@@ -407,7 +407,7 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 			pverts[vi] = V3(FLT_MAX, FLT_MAX, FLT_MAX);
 	}
 
-	trisN = 1; //temp just to check one face of the cube for hw3 other wise delte this line.
+	trisN = 2; //temp just to check one face of the cube for hw3 other wise delte this line.
 
 	for (int tri = 0; tri < trisN; tri++) {
 		unsigned int vinds[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2] };
@@ -454,12 +454,24 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 				if (sid[0] < 0.0f || sid[1] < 0.0f || sid[2] < 0.0f)
 					continue; // outside of triangle
 				
-				float currS = sLE * currPix*t1->w;
-				float currT = tLE * currPix*t1->h;
+				int currS = sLE * currPix*t1->w;
+				int currT = tLE * currPix*t1->h;
 				//cout << "j, i, T, s:" << v << "," << u << "," << currT << "," << currS << endl;
 				int pixIJ = currS + currT * t1->w;
+				//cout << pixIJ << endl;
+				if (pixIJ >= t1->w* t1->w)
+				{
+					pixIJ = t1->w * t1->w-1;
+					cout << "****************Warning: pixel beyond texture******************" << endl;
+				}
+				if (pixIJ < 0)
+				{
+					pixIJ = 0;
+					cout << "****************Warning: pixel beyond texture******************" << endl;
+				}
 				unsigned int color_uvw = t1->pix[pixIJ];
-
+				//V3 color = V3(0, currT, 0);
+				//unsigned int color_uvw = color.GetColor();
 				float currz = zLE * currPix;
 				if (fb->Farther(u, v, currz))
 					continue; // hidden
