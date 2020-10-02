@@ -415,6 +415,11 @@ void TMesh::MapTextureCorners2TriangleVerts(int tri, int whichHalf) {
 	}
 }
 
+void TMesh::getModelSpaceCord() {
+
+
+}
+
 void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 
 	V3* pverts = new V3[vertsN];
@@ -450,22 +455,23 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 		M33 eeqsm = SetEEQs(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
 		M33 ssim = SetSSIM(pverts[vinds[0]], pverts[vinds[1]], pverts[vinds[2]]);
 
-	//	M33 msim = SetMSIM(verts[vinds[0]], verts[vinds[1]], verts[vinds[2]], ppc);
 
 		V3 zv(pverts[vinds[0]][2], pverts[vinds[1]][2], pverts[vinds[2]][2]);
 		V3 zLE = ssim * zv;
 
-		cout <<verts[ vinds[0]]<<verts[ vinds[1]]<<verts[vinds[2]] << endl;
-
+	
 		V3 texS(textureSTpair[vinds[0]][0] , textureSTpair[vinds[1]][0] , textureSTpair[vinds[2]][0]);
 		V3 texT(textureSTpair[vinds[0]][1], textureSTpair[vinds[1]][1], textureSTpair[vinds[2]][1]);
 		V3 sLE = ssim * texS;
 		V3 tLE = ssim * texT;
+#if 0
+		cout << verts[vinds[0]] << verts[vinds[1]] << verts[vinds[2]] << endl;
 		cout << "texS and texT:" << endl;
 		cout << texS << texT << endl;
 		cout << "sLE and tLE" << endl;
 		cout << sLE << tLE << endl;
 		cout << top << " " << bottom << " " << left << " " << right << endl;
+#endif
 		for (int v = top; v <= bottom; v++) {
 			for (int u = left; u <= right; u++) {
 				V3 currPix(.5f + (float)u, .5f + (float)v, 1.0f);
@@ -479,12 +485,9 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 				V3 UcurrPix = ppc->UnProject(currPix);
 				V3 uvw(0, 0, 0);
 				GetBarryCentric(verts[vinds[0]], verts[vinds[1]], verts[vinds[2]], UcurrPix, uvw);								
-				int currS = (uvw.xyz[2] * textureSTpair[vinds[0]][0]+ uvw.xyz[0] * textureSTpair[vinds[1]][0]+ uvw.xyz[1] * textureSTpair[vinds[2]][0])*t1->w;
-				int currT = (uvw.xyz[2] * textureSTpair[vinds[0]][1] + uvw.xyz[0] * textureSTpair[vinds[1]][1] + uvw.xyz[1] * textureSTpair[vinds[2]][1])*t1->h;
-				int pixIJ = currS + (currT)* t1->w;
-
-				
-				
+				float currS = (uvw.xyz[2] * textureSTpair[vinds[0]][0]+ uvw.xyz[0] * textureSTpair[vinds[1]][0]+ uvw.xyz[1] * textureSTpair[vinds[2]][0])*t1->w;
+				float currT = (uvw.xyz[2] * textureSTpair[vinds[0]][1] + uvw.xyz[0] * textureSTpair[vinds[1]][1] + uvw.xyz[1] * textureSTpair[vinds[2]][1])*t1->h;
+						
 #endif
 
 #if 0
@@ -508,26 +511,14 @@ void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 				//cout << pixIJ << endl;
 #endif
 
-#if 1
-				if (pixIJ >= t1->w* t1->w)
-				{
-					pixIJ = t1->w * t1->w-1;
-					cout << "****************Warning: pixel beyond texture******************" << endl;
-				}
-				if (pixIJ < 0)
-				{
-					pixIJ = 0;
-					cout << "****************Warning: pixel beyond texture******************" << endl;
-				}
-				unsigned int color_uvw = t1->pix[pixIJ];
-#endif
 #if 0
 				//use this two lines to check weather interpolation works or not based on the colors of the vertices
 				V3 color = V3(uvw[2],0, 0);
 				unsigned int color_uvw = color.GetColor();
 
 #endif
-				//float currz = zLE * currPix;
+				unsigned int color_uvw = bilinearinterpolation(t1, currS, currT);
+				//unsigned int color_uvw = NonBilinearReginterpolation(t1, currS, currT);
 				if (fb->Farther(u, v, currz))
 					continue; // hidden
 				
@@ -579,4 +570,84 @@ void TMesh::GetBarryCentric(V3 a, V3 b, V3 c, V3 p, V3& uvw)
 	uvw.xyz[1] = area_abp / area_abc;
 	uvw.xyz[2] = area_bcp / area_abc;
 
+}
+unsigned int TMesh::NonBilinearReginterpolation(texture* t1, float uf, float vf)
+{
+	int pixIJ = t1->getPixelIndex(uf, vf);
+	if (pixIJ >= t1->w * t1->w)
+	{
+		pixIJ = t1->w * t1->w - 1;
+		cout << "****************Warning: pixel beyond texture******************" << endl;
+	}
+	if (pixIJ < 0)
+	{
+		pixIJ = 0;
+		cout << "****************Warning: pixel beyond texture******************" << endl;
+	}
+	return t1->pix[pixIJ];
+	
+
+}
+
+unsigned int TMesh::bilinearinterpolation(texture* t1, float uf, float vf)
+{
+	V3 colorBilinear;
+
+	if (vf < (t1->h - 1.5) && vf> 0.5 && uf > 0.5 && uf < (t1->w - 1.5))
+	{
+		float u0 = (uf - 0.5f);
+		float v0 = (vf - 0.5f);
+		int u0f = floor(u0);
+		int v0f = floor(v0);
+
+		float dx = u0 - u0f;
+		float dy = v0 - v0f;
+
+		V3 c0, c1, c2, c3;
+		int i0, i1, i2, i3;
+		float a0, a1, a2, a3;
+
+		i0 = t1->getPixelIndex(u0f, v0f);
+		i1 = t1->getPixelIndex(u0f + 1, v0f);
+		i2 = t1->getPixelIndex(u0f + 1, v0f + 1);
+		i3 = t1->getPixelIndex(u0f, v0f + 1);
+		//cout << "u0f, v0f, i0, i1, i2, i3:" << u0f<<" " << v0f<<" " << i0 <<" "<< i1 <<" "<<i2<<" "<<i3<< endl;
+		c0.SetFromColor(t1->pix[i0]);
+		c1.SetFromColor(t1->pix[i1]);
+		c2.SetFromColor(t1->pix[i2]);
+		c3.SetFromColor(t1->pix[i3]);
+		//cout << c0<<" " << c1<<" " << c2<<" " << c3 << endl;
+		
+		a0 = (1 - dx) * (1 - dy);
+		a1 = dx * (1 - dy);
+		a2 = dx * dy;
+		a3 = (1 - dx) * dy;
+		//a0 = a1 = a2 = a3 = 1;
+		//cout << a0 << " " << a1<<"  "<<a2<<" "<<a3<<endl;
+		for (int i = 0; i < 3; i++)
+		{
+			colorBilinear[i] = (a0 * c0[i] + a2 * c2[i] + a1 * c1[i] + a3 * c3[i]);
+
+		}
+
+		return colorBilinear.GetColor();
+
+	}
+	else 
+	{
+		int pixIJ = t1->getPixelIndex(uf, vf);
+		if (pixIJ >= t1->w * t1->w)
+		{
+			pixIJ = t1->w * t1->w - 1;
+			cout << "****************Warning: pixel beyond texture******************" << endl;
+		}
+		if (pixIJ < 0)
+		{
+			pixIJ = 0;
+			cout << "****************Warning: pixel beyond texture******************" << endl;
+		}
+		return t1->pix[pixIJ];
+
+	}
+	
 }

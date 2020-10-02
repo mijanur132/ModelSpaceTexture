@@ -8,6 +8,7 @@ public:
 	int w, h,id;
 	
 	void LoadTiff(char* fname);
+	int getPixelIndex(int u, int v);
 
 };
 

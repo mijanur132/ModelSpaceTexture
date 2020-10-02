@@ -38,4 +38,6 @@ public:
 	void RenderTexture(FrameBuffer* rfb, PPC* rppc, texture* t1);
 	void GetBarryCentric(V3 p1, V3 p2, V3 p3, V3 p, V3& uvw);
 	float CalcArea(V3 p1, V3 p2, V3 p3);
+	unsigned int bilinearinterpolation(texture* t1, float uf, float vf);
+	unsigned int NonBilinearReginterpolation(texture* t1, float uf, float vf);
 };

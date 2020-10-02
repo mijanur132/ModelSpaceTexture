@@ -30,3 +30,10 @@ void texture::LoadTiff(char* fname) {
 	TIFFClose(in);
 	
 }
+
+int texture::getPixelIndex(int u, int v)
+{
+	int id = u + v * w;
+	return id;
+
+}

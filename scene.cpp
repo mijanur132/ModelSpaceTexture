@@ -55,7 +55,7 @@ Scene::Scene() {
 	tmeshesN = 1;
 	tmeshes = new TMesh[tmeshesN];
 
-	V3 cc(0.0f, 0.0f, -200.0f);
+	V3 cc(0.0f, 0.0f, -60.0f);
 	float sideLength = 60.0f;
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
 	
