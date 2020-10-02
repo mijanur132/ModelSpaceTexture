@@ -55,7 +55,7 @@ Scene::Scene() {
 	tmeshesN = 1;
 	tmeshes = new TMesh[tmeshesN];
 
-	V3 cc(0.0f, 0.0f, -60.0f);
+	V3 cc(0.0f, 0.0f, -200.0f);
 	float sideLength = 60.0f;
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
 	
@@ -64,8 +64,8 @@ Scene::Scene() {
 	//tmeshes[0].DrawWireFrame(fb, ppc, 0xFFFF00FF);
 
 	t1=new texture();
-	t1->LoadTiff("checker.tiff");
-	//t1->LoadTiff("orange.tiff");
+	//t1->LoadTiff("checker.tiff");
+	t1->LoadTiff("orange.tiff");
 	//tmeshes[0].RenderTexture(fb, ppc, t1);
 	//fb->redraw();
 	
@@ -87,10 +87,12 @@ void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1) {
 
 	rfb->SetBGR(0xFFFFFFFF);
 	rfb->ClearZB();
-
+	
 	tmeshes[0].InitTexture();
+	tmeshes[0].setXYtileN(3.0f, 3.0f);
 	tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
 	tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
+	
 
 
 	for (int tmi = 0; tmi < tmeshesN; tmi++) {

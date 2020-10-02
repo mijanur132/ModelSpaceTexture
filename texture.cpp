@@ -33,6 +33,18 @@ void texture::LoadTiff(char* fname) {
 
 int texture::getPixelIndex(int u, int v)
 {
+	if (u >= w) {
+	//	cout << u << endl;
+		u = u % w;
+		//cout << "new U:" << u << endl;
+	}
+	if (v >= h)
+	{
+	//	cout << v << endl;
+		v = v % h;
+	//	cout << "new U:" << v << endl;
+	}
+
 	int id = u + v * w;
 	return id;
 

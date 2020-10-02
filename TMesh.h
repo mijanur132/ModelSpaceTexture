@@ -14,7 +14,7 @@ public:
 	V3 *normals;
 	V3* textureSTpair;
 	int vertsN;
-
+	float tileM, tileN; //Number of texture tiles in each direction
 	unsigned int *tris;
 	int trisN;
 	TMesh() : verts(0), vertsN(0), tris(0), trisN(0), colors(0), normals(0), onFlag(1) {};
@@ -40,4 +40,5 @@ public:
 	float CalcArea(V3 p1, V3 p2, V3 p3);
 	unsigned int bilinearinterpolation(texture* t1, float uf, float vf);
 	unsigned int NonBilinearReginterpolation(texture* t1, float uf, float vf);
+	void setXYtileN(float m, float n);
 };

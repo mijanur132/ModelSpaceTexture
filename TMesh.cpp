@@ -19,6 +19,8 @@ void TMesh::Allocate(int _vertsN, int _trisN) {
 	colors = new V3[vertsN];
 	normals = new V3[vertsN];
 	tris = new unsigned int[trisN * 3];
+	tileM = 1;
+	tileN = 1;
 }
 
 void TMesh::InitTexture()
@@ -400,25 +402,23 @@ void TMesh::MapTextureCorners2TriangleVerts(int tri, int whichHalf) {
 	//whichHalf 0-->left/up side  1 for right/down side triangle
 	//Z VALUE DOES NOT MATTER
 	unsigned int vin[3] = { tris[3 * tri + 0], tris[3 * tri + 1], tris[3 * tri + 2] };
+	
 	if (whichHalf == 0)
 	{
-		textureSTpair[vin[0]] = V3(0,0, 1);
-		textureSTpair[vin[1]] = V3(0, 1, 1);
-		textureSTpair[vin[2]] = V3(1, 1, 1);
+		textureSTpair[vin[0]] = V3(0*tileM, 0*tileN, 1);
+		textureSTpair[vin[1]] = V3(0*tileM, 1*tileN, 1);
+		textureSTpair[vin[2]] = V3(1*tileM, 1*tileN, 1);
 	}
 	else {
 	
-		textureSTpair[vin[0]] = V3(1, 1, 1);
-		textureSTpair[vin[1]] = V3(1, 0, 1);
-		textureSTpair[vin[2]] = V3(0, 0, 1);
+		textureSTpair[vin[0]] = V3(1*tileM, 1*tileN, 1);
+		textureSTpair[vin[1]] = V3(1*tileM, 0*tileN, 1);
+		textureSTpair[vin[2]] = V3(0*tileM, 0*tileN, 1);
 	
 	}
 }
 
-void TMesh::getModelSpaceCord() {
 
-
-}
 
 void TMesh::RenderTexture(FrameBuffer* fb, PPC* ppc, texture* t1) {
 
@@ -639,15 +639,20 @@ unsigned int TMesh::bilinearinterpolation(texture* t1, float uf, float vf)
 		if (pixIJ >= t1->w * t1->w)
 		{
 			pixIJ = t1->w * t1->w - 1;
-			cout << "****************Warning: pixel beyond texture******************" << endl;
+			cout << "****************Warning: pixel beyond texture******************" <<uf<<" "<<vf <<endl;
 		}
 		if (pixIJ < 0)
 		{
 			pixIJ = 0;
-			cout << "****************Warning: pixel beyond texture******************" << endl;
+			cout << "****************Warning: pixel beyond texture******************" << uf << " " << vf << endl;
 		}
 		return t1->pix[pixIJ];
 
 	}
 	
+}
+
+void TMesh::setXYtileN(float m, float n) {
+	tileM = m;
+	tileN = n;
 }
