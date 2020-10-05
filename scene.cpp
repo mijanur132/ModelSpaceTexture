@@ -19,32 +19,54 @@ Scene::Scene() {
 	gui = new GUI();
 	gui->show();
 
-	int u0 = 20;
-	int v0 = 100;
-	int h = 300;
+	int u0 = 10;
+	int v0 = 10;
+	int h = 400;
 	int w = 500;
 
 	fb = new FrameBuffer(u0, v0, w, h, 0);
-	fb->label("SW 1");
+	fb->label("SW 0");
 	fb->show();
+
 	//fb->redraw();
+	fb1 = new FrameBuffer(u0+w+20, v0, w, h, 0);
+	fb1->label("SW 2");
+	fb1->show();
+
+
+	fb2 = new FrameBuffer(u0 + 2*w + 40, 3*v0, w, h, 0);
+	fb2->label("SW 3");
+	fb2->show();
+
+	fb3 = new FrameBuffer(u0, v0+h+20, w, h, 0);
+	fb3->label("SW 4");
+	fb3->show();
+
+	fb4 = new FrameBuffer(u0+w+20, v0+h+20, w, h, 0);
+	fb4->label("SW 5");
+	fb4->show();
 
 
 
-	//t1 = new texture();
-	//t1->LoadTiff("checker.tiff");
-	//t1->LoadTiff("orange.tiff");
-	//fb->showTextureImageAsUploaded(t1);
-	//fb->redraw();
 #if 1
 
-	fb3 = new FrameBuffer(u0+w+30, v0, w, h, 0);
-	fb3->label("SW 3");
-//	fb3->show();
-	fb3->redraw();
+
 
 	fb->SetBGR(0xFFFFFFFF);
 	fb->ClearZB();
+
+	fb1->SetBGR(0xFFFFFFFF);
+	fb1->ClearZB();
+
+	fb2->SetBGR(0xFFFFFFFF);
+	fb2->ClearZB();
+
+	fb3->SetBGR(0xFFFFFFFF);
+	fb3->ClearZB();
+
+	fb4->SetBGR(0xFFFFFFFF);
+	fb4->ClearZB();
+
 
 	gui->uiw->position(u0, v0 + h + 50);
 
@@ -52,59 +74,91 @@ Scene::Scene() {
 	ppc = new PPC(hfov, fb->w, fb->h);
 	ppc3 = new PPC(hfov, fb3->w, fb3->h);
 
-	tmeshesN = 1;
+	tmeshesN = 5;
 	tmeshes = new TMesh[tmeshesN];
 
-	V3 cc(0.0f, 0.0f, -200.0f);
+	V3 cc(0.0f, 0.0f, -110.0f);
 	float sideLength = 60.0f;
 	tmeshes[0].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
+	tmeshes[1].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
+	tmeshes[2].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
+	tmeshes[3].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
+	tmeshes[4].SetToCube(cc, sideLength, 0xFF0000FF, 0xFF000000);
 	
 	//tmeshes[0].Rotate(tmeshes[0].GetCenter(),V3(0,1,0), 50.0f);
 	tmeshes[0].onFlag = 1;
 	//tmeshes[0].DrawWireFrame(fb, ppc, 0xFFFF00FF);
 
-	t1=new texture();
-	//t1->LoadTiff("checker.tiff");
+	t1=new texture();	
 	t1->LoadTiff("orange.tiff");
-	//tmeshes[0].RenderTexture(fb, ppc, t1);
-	//fb->redraw();
-	
-	Render(fb,ppc,t1);
 
+	t2 = new texture();
+	t2->LoadTiff("complex.tiff");
+
+	t3 = new texture();
+	t3->LoadTiff("brick.tiff");
+
+	t4 = new texture();
+	t4->LoadTiff("reflection2.tiff");
+
+	t5 = new texture();	
+	t5->LoadTiff("self.tiff");
+
+	tmeshes[0].setXYtileN(3.0f, 3.0f);
+	//tmeshes[0].setXYtileN(3.0f, 3.0f);
+	for (int i = 0; i < 3600; i++)
+	{
+		Render(fb, ppc, t1, &tmeshes[0]);
+		Render(fb1, ppc, t2, &tmeshes[1]);
+		Render(fb2, ppc, t3, &tmeshes[2]);
+		Render(fb3, ppc, t4, &tmeshes[3]);
+		Render(fb4, ppc, t5, &tmeshes[4]);
+		tmeshes[0].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
+		tmeshes[1].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
+		tmeshes[2].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
+		tmeshes[3].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
+		tmeshes[4].Rotate(tmeshes[0].GetCenter(), V3(0, 1, 0), 1.0f);
+	}
+
+	
 #endif
 
 }
 
 void Scene::Render() {
 
-	Render(fb, ppc,t1);
-	return;
+	//Render(fb, ppc,t1);
+	//return;
 	
 }
 
 
-void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1) {
+void Scene::Render(FrameBuffer *rfb, PPC *rppc,texture* t1, TMesh* tmesh) {
 
 	rfb->SetBGR(0xFFFFFFFF);
 	rfb->ClearZB();
 	
-	tmeshes[0].InitTexture();
-	tmeshes[0].setXYtileN(3.0f, 3.0f);
-	tmeshes[0].MapTextureCorners2TriangleVerts(0, 0);
-	tmeshes[0].MapTextureCorners2TriangleVerts(1, 1);
+	tmesh->InitTexture();	
+	tmesh->MapTextureCorners2TriangleVerts(0, 0);
+	tmesh->MapTextureCorners2TriangleVerts(1, 1);
 	
-
+#if 0
 
 	for (int tmi = 0; tmi < tmeshesN; tmi++) {
 		if (!tmeshes[tmi].onFlag)
 			continue;
-		//tmeshes[tmi].DrawWireFrame(rfb, rppc, 0xFF000000);
-		tmeshes[tmi].RenderTexture(rfb, rppc,t1);
+		tmeshes[tmi].DrawWireFrame(rfb, rppc, 0xFF000000);
+		tmesh->RenderTexture(rfb, rppc,t1);
+	
 	}
-
+#endif
+	tmesh->RenderTexture(rfb, rppc, t1);
 	rfb->redraw();
+	Fl::check();
+	return;
 
 }
+
 
 void Scene::DBG() {
 

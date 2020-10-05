@@ -13,19 +13,19 @@ public:
 
 	GUI *gui;
 	FrameBuffer *fb;
-	FrameBuffer* fb1, *fb3;
+	FrameBuffer* fb1, *fb2, *fb3, *fb4;
 	PPC* ppc, *ppc3;
 	PPC* ppc1;
 	TMesh* tmeshes;
 	int tmeshesN;
-	texture *t1;
+	texture *t1, *t2, *t3, *t4, *t5;
 	//int texesN;
 	float vf;
 	Scene();
 	void DBG();
 	void NewButton();
 	void Render();
-	void Render(FrameBuffer* fb, PPC* ppc, texture* t1);
+	void Render(FrameBuffer* fb, PPC* ppc, texture* t1, TMesh* tmesh);
 };
 
 extern Scene *scene;
