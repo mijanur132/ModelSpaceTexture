@@ -14,7 +14,7 @@ public:
 	GUI *gui;
 	FrameBuffer *fb;
 	FrameBuffer* fb1, *fb2, *fb3, *fb4;
-	PPC* ppc, *ppc3;
+	PPC* ppc, *ppc3, *LightSrcPPC;
 	PPC* ppc1;
 	TMesh* tmeshes;
 	int tmeshesN;
@@ -25,7 +25,10 @@ public:
 	void DBG();
 	void NewButton();
 	void Render();
+	void Render(FrameBuffer* rfb, PPC* rppc);
 	void Render(FrameBuffer* fb, PPC* ppc, texture* t1, TMesh* tmesh);
+	V3 L; // point light source
+	float ka; // ambient lighting coefficient
 };
 
 extern Scene *scene;

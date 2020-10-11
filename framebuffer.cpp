@@ -17,13 +17,40 @@ FrameBuffer::FrameBuffer(int u0, int v0,
 	h = _h;
 	pix = new unsigned int[w*h];
 	zb = new float[w*h];
+	zbL1 = new float[w * h];
 
 }
 
 void FrameBuffer::ClearZB() {
 
 	for (int uv = 0; uv < w*h; uv++)
-		zb[uv] = 0.0f;
+		zb[uv] = -5000.0f;
+
+}
+
+void FrameBuffer::ClearZB(float* zb1) {
+
+	for (int uv = 0; uv < w * h; uv++)
+		zb1[uv] = -5000.0f;
+
+}
+
+int FrameBuffer::getPixelIndex(int u, int v)
+{
+	if (u >= w) {
+		//	cout << u << endl;
+		u = u % w;
+		//cout << "new U:" << u << endl;
+	}
+	if (v >= h)
+	{
+		//	cout << v << endl;
+		v = v % h;
+		//	cout << "new U:" << v << endl;
+	}
+
+	int id = u + v * w;
+	return id;
 
 }
 
@@ -165,6 +192,32 @@ int FrameBuffer::Farther(int u, int v, float currz) {
 
 }
 
+int FrameBuffer::FartherLightZ(float* zb1, int u, int v, float currz) {
+
+	if (u < 0 || u > w - 1 || v < 0 || v > h - 1)
+		return 1;
+	int uv = (h - 1 - v) * w + u;
+	if (currz < zbL1[uv])
+		return 1;
+	zbL1[uv] = currz;
+	return 0;
+
+}
+int FrameBuffer::FartherLightZCompare(float* zb1, int u, int v, float currz) {
+
+	if (u < 0 || u > w - 1 || v < 0 || v > h - 1)
+		return 1;
+	int uv = (h - 1 - v) * w + u;
+	if (currz+2 < zbL1[uv] )
+		return 1;
+	else {
+		return 0;
+	}
+
+}
+
+
+
 void FrameBuffer::Draw2DSegment(V3 p0, V3 c0, V3 p1, V3 c1) {
 
 	float du = fabsf((p0 - p1)[0]);
@@ -206,7 +259,7 @@ void FrameBuffer::Draw3DSegment(V3 P0, V3 P1, PPC *ppc, V3 c0, V3 c1) {
 		return;
 	if (!ppc->Project(P1, p1))
 		return;
-
+	cout << p0 << endl;
 	Draw2DSegment(p0, c0, p1, c1);
 
 }

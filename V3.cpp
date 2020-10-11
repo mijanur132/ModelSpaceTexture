@@ -144,3 +144,9 @@ V3 V3::RotatePoint(V3 aO, V3 adir, float theta) {
 	return rP;
 
 }
+
+V3 V3::Light(V3 lv, V3 nv, float ka) {
+	float kd = lv * nv; kd = (kd < 0.0f) ? 0.0f : kd;
+	V3& C = *this;
+	return C * (ka + (1.0f - ka) * kd);
+}

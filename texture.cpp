@@ -49,3 +49,15 @@ int texture::getPixelIndex(int u, int v)
 	return id;
 
 }
+
+void texture::init()
+{
+
+	w = 500;
+	h = 500;
+	pix = new unsigned int[w * h];
+	V3 C = V3(0, 0, 1);
+	for (int uv = 0; uv < w * h; uv++)
+		pix[uv] = C.GetColor();	
+
+}
